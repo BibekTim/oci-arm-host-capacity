@@ -8,7 +8,7 @@ jobs:
   create-instance:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v1
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -33,3 +33,12 @@ jobs:
           OCI_SHAPE: ${{ secrets.OCI_SHAPE }}
           OCI_MAX_INSTANCES: ${{ secrets.OCI_MAX_INSTANCES }}
           OCI_SSH_PUBLIC_KEY: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+      - name: Send SMS notification
+        if: success()
+        run: |
+          curl -s --url "smtps://smtp.gmail.com:465" \
+          --ssl-required \
+          --mail-from "${{ secrets.EMAIL_ADDRESS }}" \
+          --mail-rcpt "${{ secrets.PHONE_GATEWAY }}" \
+          --user "${{ secrets.EMAIL_ADDRESS }}:${{ secrets.EMAIL_PASSWORD }}" \
+          -T <(echo -e "Subject: Oracle Server Ready\n\nYour Oracle ARM server has been created successfully! Log into Oracle Cloud to get your server IP.")
